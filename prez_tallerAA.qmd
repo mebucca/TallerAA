@@ -1,0 +1,370 @@
+---
+title: "Taller DobleA"
+subtitle: "Diseño y Análisis de Encuestas para Investigación Aplicada"
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    slide-number: true
+    progress: true
+    transition: fade
+    background-transition: fade
+    highlight-style: github-dark
+    code-block-bg: "#1e2a3a"
+    code-block-border-left: "#4B9CD3"
+    footer: "DobleA · www.dobleachile.cl"
+    logo: ""
+    width: 1280
+    height: 720
+    margin: 0.08
+    center: false
+execute:
+  echo: false
+---
+
+## {background-color="#0D1117" .title-slide}
+
+::: {.title-block}
+[TALLER DOBLEA]{.tag-line}
+
+# Diseño y Análisis de Encuestas {.main-title}
+## para Investigación Aplicada {.sub-title}
+
+::: {.lang-badges}
+[Python]{.badge-python} 
+[Julia]{.badge-julia} 
+[R]{.badge-r}
+:::
+:::
+
+
+## ¿Qué hace que una encuesta entregue resultados realmente confiables? {background-color="#0D1117"}
+
+::: {.question-block}
+La diferencia entre una encuesta útil y una que genera ruido no está en el software.  
+Está en las decisiones metodológicas detrás de cada pregunta.
+:::
+
+::: {.stat-row}
+::: {.stat-card}
+**Diseño**  
+¿Qué medimos?
+:::
+::: {.stat-card}
+**Calidad**  
+¿Cómo validamos?
+:::
+::: {.stat-card}
+**Análisis**  
+¿Qué concluimos?
+:::
+:::
+
+
+## El problema que este taller resuelve {background-color="#0D1117"}
+
+::: {.insight-block}
+**EN INVESTIGACIÓN, TODO COMIENZA CON UNA PREGUNTA.**
+:::
+
+Las encuestas son la herramienta más usada para entender personas, mercados y opiniones — pero su valor depende de **qué preguntamos, cómo medimos y cómo interpretamos**.
+
+::: {.gap-list}
+🔴 &nbsp; La formación tradicional rara vez enseña diseño riguroso en contextos reales.
+
+🟡 &nbsp; Las herramientas de IA pueden ejecutar técnicas estadísticas, pero aprovecharlas exige saber **qué analizar y cuándo**.
+
+🟢 &nbsp; La brecha no es tecnológica — es metodológica.
+:::
+
+
+## ¿Qué ofrecemos? {background-color="#0D1117"}
+
+::: {.offer-grid}
+::: {.offer-card}
+### 🎯 Metodología aplicada
+Fundamentos metodológicos con foco en diseño de preguntas, calidad de medición e interpretación rigurosa.
+:::
+
+::: {.offer-card}
+### 🔬 Práctica real
+Casos basados en estudios de mercado y opinión pública — no ejercicios de laboratorio.
+:::
+
+::: {.offer-card}
+### 🤝 Dos mundos, un taller
+Reúne profesionales del mundo académico y de estudios de mercado para compartir herramientas relevantes para ambos.
+:::
+
+::: {.offer-card}
+### 🤖 IA como herramienta
+Integración de herramientas de IA para optimizar el diseño y el análisis — con criterio metodológico.
+:::
+:::
+
+::: {.tagline-bottom}
+Más que un curso de software o un listado de fórmulas — una formación en **metodología aplicada a estudios reales**.
+:::
+
+
+## ¿A quién está dirigido? {background-color="#0D1117"}
+
+::: {.columns}
+::: {.column width="50%"}
+::: {.audience-card}
+📊 &nbsp; **Analistas** en consultoras de estudios
+:::
+::: {.audience-card}
+🏢 &nbsp; **Equipos de research** en empresas
+:::
+::: {.audience-card}
+🔭 &nbsp; **Investigadores** que buscan actualizar conocimientos aplicados
+:::
+::: {.audience-card}
+🎓 &nbsp; **Estudiantes universitarios** interesados en investigación
+:::
+:::
+
+::: {.column width="50%"}
+::: {.audience-card}
+🏛️ &nbsp; **Organismos públicos** que trabajan con encuestas
+:::
+::: {.audience-card}
+📈 &nbsp; **Profesionales** que buscan desarrollarse en investigación
+:::
+::: {.audience-card}
+🧑‍💻 &nbsp; **Asistentes de investigación** en etapas tempranas
+:::
+
+::: {.prereq-block}
+**Requisito:** Nociones básicas de encuestas y análisis de datos.
+:::
+:::
+:::
+
+
+## ¿Qué aprenderemos? {background-color="#0D1117"}
+
+::: {.learning-grid}
+::: {.learn-item}
+[01]{.num} **Diseñar encuestas** con claridad conceptual y objetivos bien definidos.
+:::
+
+::: {.learn-item}
+[02]{.num} **Detectar errores** de diseño y sesgos como la deseabilidad social.
+:::
+
+::: {.learn-item}
+[03]{.num} **Identificar técnicas** analíticas según el problema, incluyendo experimentos de encuesta.
+:::
+
+::: {.learn-item}
+[04]{.num} **Evaluar representatividad** y calidad de los datos con rigor.
+:::
+
+::: {.learn-item}
+[05]{.num} **Aplicar herramientas estadísticas** con comprensión conceptual sólida.
+:::
+
+::: {.learn-item}
+[06]{.num} **Usar IA y R** en casos prácticos basados en estudios reales.
+:::
+:::
+
+
+## Estructura del Taller {background-color="#111827" .section-divider}
+
+::: {.section-header}
+[3 MÓDULOS · 6 JORNADAS · 3 HORAS CADA UNA]{.section-meta}
+
+Cada módulo combina discusión conceptual con ejercicios aplicados sobre datos reales,  
+progresando desde el diseño hasta el análisis y la implementación técnica.
+:::
+
+
+## Módulo 1: Diseño de Encuestas y Fundamentos {background-color="#0D1117"}
+
+::: {.columns}
+::: {.column width="55%"}
+::: {.module-header .m1}
+**MÓDULO 1** · 2 jornadas, 3 horas c/u
+:::
+
+En este módulo trabajamos el diseño de encuestas con foco en definir el problema de investigación, formular buenas preguntas y estructurar un cuestionario sólido.
+
+::: {.module-quote}
+"Una buena encuesta comienza mucho antes de programarla."
+:::
+:::
+
+::: {.column width="45%"}
+::: {.content-list}
+[CONTENIDOS]{.content-label}
+
+◆ &nbsp; Definición de objetivos sustantivos y conceptos medibles
+
+◆ &nbsp; Cómo traducir conceptos abstractos en preguntas claras
+
+◆ &nbsp; Errores comunes en redacción
+
+◆ &nbsp; Escalas, orden y estructura del cuestionario
+
+◆ &nbsp; Sesgos de medición: Deseabilidad social
+
+◆ &nbsp; Experimentos de encuesta como herramienta de medición
+:::
+:::
+:::
+
+
+## Módulo 2: Herramientas de Análisis y Evaluación de Calidad {background-color="#0D1117"}
+
+::: {.columns}
+::: {.column width="55%"}
+::: {.module-header .m2}
+**MÓDULO 2** · 2 jornadas, 3 horas c/u
+:::
+
+Enfocado en herramientas para analizar encuestas y evaluar la calidad de los datos en estudios reales. Trabajamos con herramientas del estado del arte en estadística aplicada, incluyendo análisis práctico en **R**.
+:::
+
+::: {.column width="45%"}
+::: {.content-list}
+[CONTENIDOS]{.content-label}
+
+◆ &nbsp; Representatividad y diseño muestral
+
+◆ &nbsp; Uso de ponderadores y post-estratificación
+
+◆ &nbsp; Evaluación de calidad de datos y detección de problemas frecuentes
+
+◆ &nbsp; Herramientas para analizar experimentos de encuesta
+
+◆ &nbsp; Simulación simple y evaluación de incertidumbre
+
+◆ &nbsp; Introducción práctica a análisis en **R**
+:::
+:::
+:::
+
+
+## Módulo 3: Capacitación Técnica Aplicada {background-color="#0D1117"}
+
+::: {.columns}
+::: {.column width="55%"}
+::: {.module-header .m3}
+**MÓDULO 3** · 2 jornadas, 3 horas c/u
+:::
+
+Profundiza en la implementación práctica de herramientas para el análisis y gestión de encuestas — para quienes buscan mayor autonomía técnica con datos.
+:::
+
+::: {.column width="45%"}
+::: {.content-list}
+[CONTENIDOS]{.content-label}
+
+◆ &nbsp; Construcción en **R** de ponderadores por post-estratificación
+
+◆ &nbsp; Uso de **IA** para diseño y análisis de encuestas
+
+◆ &nbsp; Automatización básica de reportes
+
+◆ &nbsp; Ejercicios aplicados con datos reales
+
+◆ &nbsp; Estructuración de proyectos reproducibles
+
+◆ &nbsp; Visualización de datos
+:::
+:::
+:::
+
+
+## ¿Quiénes te acompañarán? {background-color="#0D1117"}
+
+::: {.team-grid}
+::: {.team-card}
+::: {.team-avatar .avatar-1}MB{.initials}
+:::
+**Mauricio Bucca**  
+[PhD Sociología · Cornell University]{.affiliation}
+
+Profesor en la Universidad Católica de Chile. Experto en movilidad social, modelación Bayesiana, estratificación y diseño de encuestas. Experiencia en consultoría, métodos experimentales y análisis de opinión pública.
+:::
+
+::: {.team-card}
+::: {.team-avatar .avatar-2}PA{.initials}
+:::
+**Pablo Argote**  
+[PhD Ciencia Política · Columbia University]{.affiliation}
+
+Investigador postdoctoral en University of Southern California. Especialista en comportamiento político, diseño de encuestas, estadística aplicada e inferencia causal.
+:::
+
+::: {.team-card}
+::: {.team-avatar .avatar-3}LA{.initials}
+:::
+**Lucía Argote**  
+[Socia Fundadora · DobleA]{.affiliation}
+
+Socióloga UDP, Magíster en Políticas Públicas, Diplomado en Análisis de Datos Avanzado (PUC). Especialista en traducir datos en información accionable para clientes públicos y privados.
+:::
+:::
+
+
+## Información General {background-color="#0D1117"}
+
+::: {.columns}
+::: {.column width="55%"}
+::: {.info-block}
+[📅 FECHAS]{.info-label}
+
+::: {.date-item .d1}
+**Módulo 1** · 4 y 5 de mayo · 16:00–19:30
+:::
+::: {.date-item .d2}
+**Módulo 2** · 11 y 12 de mayo · 16:00–19:30
+:::
+::: {.date-item .d3}
+**Módulo 3** · 18 y 19 de mayo · 16:00–19:30
+:::
+:::
+
+::: {.info-block}
+[💰 INVERSIÓN]{.info-label}
+
+**$250.000 CLP** por persona  
+Descuento especial para **estudiantes de pregrado**
+:::
+:::
+
+::: {.column width="45%"}
+::: {.info-block}
+[🖥️ FORMATO]{.info-label}
+
+Presencial u online **según demanda**
+:::
+
+::: {.info-block}
+[📋 REQUISITO]{.info-label}
+
+Nociones básicas de encuestas y análisis de datos
+:::
+
+::: {.contact-block}
+[📬 CONTACTO]{.info-label}
+
+**María Paz Carreño**  
+mpaz.carreno@dobleachile.cl  
++56 9 7476 4663
+:::
+:::
+:::
+
+
+## {background-color="#0D1117" .closing-slide}
+
+::: {.closing-block}
+
+[www.dobleachile.cl]{.closing-url}
+
+[mpaz.carreno@dobleachile.cl · +56 9 7476 4663]{.closing-contact}
+:::

@@ -1,0 +1,438 @@
+/*-- scss:defaults --*/
+
+/* ── Palette ── */
+$cream:      #f5f2ed;
+$ink:        #1c1c1c;
+$navy:       #1a1a2e;
+$rust:       #c0392b;
+$steel:      #4a6fa5;
+$mid-gray:   #888;
+$light-gray: #e8e4de;
+$code-bg:    #282c34;
+
+/* ── Typography ── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+$font-family-sans-serif: "DM Sans", sans-serif;
+$font-family-monospace:  "DM Mono", monospace;
+
+$presentation-font-size-root: 28px;
+$presentation-line-height: 1.32;
+
+
+/*-- scss:rules --*/
+
+/* ── Base ── */
+
+.reveal {
+  font-family: $font-family-sans-serif;
+  color: $ink;
+  background-color: $cream;
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.reveal .slides {
+  text-align: left;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.reveal .slides section {
+  padding: 0.4em 1.8em !important;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.reveal .slide-content {
+  width: 100%;
+  max-width: 94vw;
+}
+
+.reveal .slide-content > * {
+  max-width: 96%;
+}
+
+
+/* ── Headers ── */
+
+.reveal h1 {
+  font-size: 2.3em;
+  font-weight: 700;
+  color: $ink;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  margin-bottom: 0.28em;
+}
+
+.reveal h2 {
+  font-size: 1.55em;
+  font-weight: 700;
+  color: $ink;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+
+  margin-bottom: 0.7em;
+  padding-bottom: 0.18em;
+
+  border-bottom: 1px solid rgba(192,57,43,.35);
+}
+
+.reveal h3 {
+  font-size: 1.08em;
+  font-weight: 500;
+  color: $steel;
+  margin-bottom: 0.35em;
+  letter-spacing: -0.01em;
+}
+
+
+/* ── Dark section slides ── */
+
+.reveal section[data-background-color] {
+  padding-left: 6vw !important;
+  padding-right: 6vw !important;
+}
+
+.reveal section[data-background-color] h1,
+.reveal section[data-background-color] h2,
+.reveal section[data-background-color] h3,
+.reveal section[data-background-color] p,
+.reveal section[data-background-color] li {
+  color: $cream !important;
+}
+
+.reveal section[data-background-color] h2 {
+  border-bottom-color: rgba(255,255,255,0.22) !important;
+}
+
+
+/* ── Body text ── */
+
+.reveal p {
+  margin: 0.35em 0;
+  line-height: 1.38;
+}
+
+.reveal li {
+  margin: 0.22em 0;
+  line-height: 1.38;
+}
+
+.reveal ul,
+.reveal ol {
+  margin-left: 1.1em;
+}
+
+
+/* ── Strong / emphasis ── */
+
+.reveal strong {
+  font-weight: 700;
+  color: $rust;
+}
+
+.reveal em {
+  color: $steel;
+  font-style: italic;
+}
+
+
+/* ── Links ── */
+
+.reveal a {
+  color: $steel;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reveal a:hover {
+  color: $rust;
+}
+
+
+/* ── Blockquote ── */
+
+.reveal blockquote {
+  background: transparent;
+  border-left: 4px solid $rust;
+
+  padding: 0.6em 1.2em;
+  margin: 1em 0;
+
+  font-size: 1.02em;
+  color: $ink;
+
+  font-style: normal;
+
+  box-shadow: none;
+  width: auto;
+}
+
+
+/* ── Code ── */
+
+.reveal pre {
+  background-color: $code-bg;
+
+  border-radius: 10px;
+  border: none;
+
+  box-shadow: 0 8px 24px rgba(0,0,0,.16);
+
+  font-size: 0.62em;
+
+  padding: 0 !important;
+  margin: 0.7em 0;
+
+  width: 100%;
+  overflow: hidden;
+}
+
+.reveal pre code {
+  color: #abb2bf;
+  background-color: transparent !important;
+
+  padding: 1.3em 1.5em !important;
+
+  font-family: $font-family-monospace;
+
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+.reveal code:not(pre code) {
+  font-family: $font-family-monospace;
+
+  font-size: 0.88em;
+
+  color: $rust;
+  background-color: rgba(192, 57, 43, 0.08);
+
+  padding: 1px 5px;
+
+  border-radius: 3px;
+}
+
+
+/* ── Tables ── */
+
+.reveal table {
+  width: 100%;
+
+  font-size: 0.72em;
+
+  border-collapse: collapse;
+
+  margin: 0.5em 0;
+}
+
+.reveal table th {
+  background-color: $navy;
+  color: $cream;
+
+  padding: 9px 16px;
+
+  font-weight: 500;
+  text-align: left;
+
+  border: none;
+}
+
+.reveal table td {
+  padding: 7px 16px;
+
+  border-bottom: 1px solid $light-gray;
+}
+
+.reveal table tr:nth-child(even) td {
+  background-color: rgba(0,0,0,0.025);
+}
+
+.reveal table tr:hover td {
+  background-color: rgba(74, 111, 165, 0.06);
+}
+
+
+/* ── Images / figures ── */
+
+.reveal img,
+.reveal video,
+.reveal iframe {
+  max-width: 100%;
+  max-height: 82vh;
+
+  object-fit: contain;
+
+  margin: 0 auto;
+
+  display: block;
+}
+
+
+/* ── Callouts ── */
+
+.reveal .callout {
+  border-radius: 6px;
+
+  padding: 0.8em 1.2em;
+  margin: 0.8em 0;
+
+  font-size: 0.9em;
+}
+
+.reveal .callout-important {
+  background-color: rgba(192, 57, 43, 0.06);
+  border-left: 4px solid $rust;
+}
+
+.reveal .callout-note {
+  background-color: rgba(74, 111, 165, 0.08);
+  border-left: 4px solid $steel;
+}
+
+.reveal .callout-important .callout-title,
+.reveal .callout-note .callout-title {
+  font-weight: 700;
+  font-size: 0.95em;
+
+  margin-bottom: 0.3em;
+}
+
+
+/* ── Columns ── */
+
+.reveal .columns {
+  display: flex;
+
+  gap: 2.2rem;
+
+  align-items: flex-start;
+}
+
+.reveal .column {
+  overflow: hidden;
+}
+
+
+/* ── Incremental lists ── */
+
+.reveal .incremental > * {
+  opacity: 0.18;
+}
+
+.reveal .incremental > .current-fragment,
+.reveal .incremental > .visible {
+  opacity: 1;
+}
+
+
+/* ── Fragments ── */
+
+.reveal .fragment.fade-in {
+  opacity: 0;
+}
+
+.reveal .fragment.fade-in.visible {
+  opacity: 1;
+}
+
+
+/* ── Footer ── */
+
+.reveal .footer {
+  font-size: 0.5em;
+
+  color: $mid-gray;
+
+  font-family: $font-family-monospace;
+}
+
+
+/* ── Slide number ── */
+
+.reveal .slide-number {
+  background-color: transparent;
+
+  color: $mid-gray;
+
+  font-family: $font-family-monospace;
+
+  font-size: 0.55em;
+}
+
+
+/* ── Progress bar ── */
+
+.reveal .progress {
+  height: 3px;
+  color: $rust;
+}
+
+
+/* ── HR ── */
+
+.reveal hr {
+  border: none;
+  border-top: 1px solid $light-gray;
+
+  margin: 1em 0;
+}
+
+
+/* ── Title slide ── */
+
+#title-slide {
+  background-color: $navy;
+
+  text-align: left;
+
+  padding: 8vh 7vw !important;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#title-slide .title {
+  color: $cream;
+
+  font-size: 2.1em;
+  font-weight: 700;
+
+  letter-spacing: -0.05em;
+  line-height: 1.02;
+
+  max-width: 78%;
+
+  margin-bottom: 0.22em;
+}
+
+#title-slide .subtitle {
+  color: rgba(245, 242, 237, 0.72);
+
+  font-size: 1.02em;
+  font-weight: 300;
+
+  margin-bottom: 1.15em;
+
+  max-width: 62%;
+}
+
+#title-slide .author {
+  color: rgba(245, 242, 237, 0.88);
+
+  font-size: 0.78em;
+  font-weight: 400;
+
+  margin-bottom: 0.15em;
+}
+
+#title-slide .date {
+  color: rgba(245, 242, 237, 0.55);
+
+  font-size: 0.68em;
+
+  font-family: $font-family-monospace;
+}

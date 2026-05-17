@@ -1,0 +1,1972 @@
+---
+title: "Producción y Análisis de Datos"
+subtitle: "La importancia del workflow"
+author: "Mauricio Bucca · Sociología UC · DobleA"
+date: "2025-05-19"
+date-format: "D [de] MMMM[,] YYYY"
+lang: es
+format:
+  revealjs:
+    theme: [default, custom.scss]
+    slide-number: true
+    highlight-style: atom-one-dark
+    code-line-numbers: false
+    transition: fade
+    transition-speed: fast
+    footer: "DobleA LAB · https://dobleataller.github.io"
+    width: 1280
+    height: 720
+    chalkboard: true
+`execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(knitr)
+
+set.seed(2025)
+n <- 150
+
+clientes <- tibble(
+  empresa        = paste0("Emp_", str_pad(1:n, 3, pad = "0")),
+  region         = sample(
+    c("Metropolitana", "Valparaíso", "Biobío", "Antofagasta", "Araucanía", "Los Lagos"),
+    n, replace = TRUE, prob = c(0.40, 0.18, 0.15, 0.12, 0.08, 0.07)
+  ),
+  sector         = sample(
+    c("Retail", "Minería", "Servicios", "Manufactura", "Finanzas", "Agro"),
+    n, replace = TRUE
+  ),
+  nps            = as.integer(round(rnorm(n, mean = 38, sd = 25))),
+  satisfaccion   = round(runif(n, 3.2, 9.8), 1),
+  contratos      = rpois(n, lambda = 4) + 1,
+  facturacion_mm = round(rlnorm(n, meanlog = 3.8, sdlog = 1.3), 1)
+) |>
+  mutate(
+    nps          = pmax(-100L, pmin(100L, nps)),
+    satisfaccion = pmax(1.0,   pmin(10.0, satisfaccion))
+  )
+
+clientes$nps[sample(1:n, 11)]           <- NA
+clientes$satisfaccion[sample(1:n, 7)]   <- NA
+clientes$facturacion_mm[sample(1:n, 4)] <- NA
+```
+
+## Hoy
+
+<br>
+
+**El problema**
+
+- Cómo se ve un proyecto mal organizado
+- Por qué eso nos cuesta tiempo, errores y credibilidad
+
+**La solución**
+
+- Qué es un *workflow* y por qué importa más que la herramienta
+- Cada herramienta resuelve **un problema específico** del mal workflow
+
+<br>
+
+. . .
+
+**El objetivo**
+
+
+> *Reproducir todos los resultados con un solo clic — o una línea de código.*
+
+
+
+---
+
+# Parte I · Lo que puede salir mal {background-color="#2d1b00"}
+
+---
+
+## El proyecto que todos hemos sufrido
+
+<br>
+
+::: {style="text-align: center;"}
+![](https://live.staticflickr.com/2142/2120132701_855663ec69_z.jpg){width=70%}
+:::
+
+
+---
+
+
+## Los 3 pecados capitales
+
+<br>
+
+::: {.incremental}
+1. **Proyecto desordenado** — archivos dispersos, sin convención ni estructura
+2. **Malas prácticas de coding** — un solo script, rutas absolutas, sin comentarios, sin orden
+3. **Resultados producidos a mano** — copiar-pegar números al Word, gráficos clic-a-clic
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; margin-top: 1em;"}
+A lo largo de la sesión vamos a **anclar cada herramienta a uno de estos problemas**.
+:::
+
+---
+
+## Pecado #1 · Proyecto desordenado
+
+<br>
+
+::: {.incremental}
+- No sé cuál archivo contiene los datos originales
+- Cambio algo y **no sé qué más deja de funcionar**
+- El jefe pregunta *"¿puedes actualizar el reporte?"*... y toma 2 horas, 2 días o 2 semanas!
+- En 1 mes **ni yo sé qué hice aquí**
+- Mi contraparte intenta reproducir mis resultados: **no puede**
+
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.85em; text-align: center; margin-top: 1em;"}
+🛠️ **Lo resolveremos con:** estructura de carpetas + GitHub + README
+:::
+
+---
+
+## Pecado #2 · Malas prácticas de coding
+
+### El script de caos
+
+::: {style="font-size: 0.78em;"}
+```r
+library(tidyverse)
+#library(dplyr)
+
+datos  <- read_csv("/Users/juan/Desktop/proyecto final/datos clientes USAR ESTE v3.csv")
+datos2 = datos[!is.na(datos$nps),]
+datos2$nps2 <- ifelse(datos2$nps > 50, "Promotor","otro")
+
+metro <- datos2[datos2$region=="Metropolitana",]
+mean(metro$nps); sd(metro$nps)
+
+# valpo ← copiar-pegar 6 veces
+Valpo <- datos2[datos2$region == "Valparaíso",]
+mean(Valpo$nps); sd(Valpo$nps)
+
+# OJO revisar esto
+datos2$nps2 = ifelse(datos2$nps>=50,"promotor","Otro") # ← pisa lo de arriba!!
+
+ggplot(datos2,aes(x=region,y=nps))+geom_boxplot()
+lm(nps~satisfaccion,data=datos2)
+```
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.85em; text-align: center; margin-top: 0.6em;"}
+🛠️ **Lo resolveremos con:** buenas prácticas de coding — sección 3
+:::
+
+
+---
+
+### ¿Cuántos problemas ves?
+
+<br>
+
+::: {.incremental}
+1. **Ruta absoluta** con espacios — falla en cualquier otro computador
+2. **Nombre de archivo** `"USAR ESTE v3"` en el código — sin control de versiones
+3. **Sin separación** — limpieza + análisis + figura + modelo todo junto
+4. **Repetición manual** de `mean()` / `sd()` para cada región
+5. **La figura no se guarda** — desaparece cuando cierras R
+6. **El modelo se imprime** pero no se guarda ni se exporta
+7. **Sin mensajes de progreso** — no sé si el script terminó o se colgó a mitad
+:::
+
+---
+
+## Pecado #3 · Resultados producidos a mano
+
+<br>
+
+Dos problemas distintos, igual de graves:
+
+::: {.incremental}
+1. **Propenso a errores** — copiar un número mal, actualizar solo algunas celdas, una fórmula que referencia la columna equivocada
+2. **No escala** — si el análisis aplica a 6 regiones, tienes que repetir cada paso 6 veces a mano
+:::
+
+---
+
+### Propenso a errores
+
+<br>
+
+::: {layout="[[1, 1]]"}
+
+::: {style="text-align: center;"}
+![](https://www.toonpool.com/user/57241/files/reinhart_rogoff_apologetic_comic_1990405.jpg){width=100%}
+:::
+
+::: {style="text-align: center;"}
+![](https://qz.com/cdn-cgi/image/width=1920,quality=85,format=auto/https://assets.qz.com/media/5924f8997a805029dc6744d40b164bfc.jpg){width=100%}
+:::
+
+:::
+
+::: {style="font-size: 0.85em;"}
+**Reinhart & Rogoff (2010):** un error en una fórmula de Excel cambió los resultados de un paper que justificó políticas de austeridad en media Europa. El error existió por años sin que nadie lo detectara.
+:::
+
+---
+
+### No escalable
+
+<br>
+
+::: {.callout-warning appearance="minimal" icon=false}
+**La situación típica:** el cliente opera en 6 regiones y quiere un reporte por región. Los datos se actualizan cada mes.
+:::
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**Enfoque manual**
+
+```
+1. Filtra la hoja por "Metropolitana"
+2. Copia las tablas al Word
+3. Actualiza los gráficos a mano
+4. Repite para Valparaíso
+5. Repite para Biobío
+6. Repite para las 3 regiones restantes
+
+→ 6 archivos Word distintos
+→ Números copiados a mano
+→ El mes siguiente: desde cero
+→ Garantía: habrá errores y será lento
+```
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**Enfoque con código**
+
+```r
+regiones <- unique(clientes$region)
+
+for (r in regiones) {
+  quarto_render(
+    "reporte.qmd",
+    execute_params = list(region = r),
+    output_file = paste0(r, ".html")
+  )
+}
+# → 6 reportes idénticos en estructura
+# → Nuevos datos, nuevos reportes en un clic
+# → Cero errores manuales
+```
+:::
+::::
+
+---
+
+
+# Parte II · Principios de un workflow efectivo {background-color="#0d2b1a"}
+
+---
+
+## ¿Qué es el *workflow*?
+
+<br>
+
+::: {style="font-size: 1.1em;"}
+Un **workflow** es el flujo de producción de un análisis:
+el camino que va desde los datos crudos hasta el reporte final.
+:::
+
+---
+
+## El objetivo
+
+<br>
+
+> *Si mi workflow es efectivo, puedo replicar todos mis resultados —figuras, tablas, informes— con un solo clic o una línea de código.*
+
+<br>
+
+. . .
+
+Esto requiere:
+
+::: {.incremental}
+1. **Estructura predecible** 
+2. **Datos crudos intocables**
+3. **Outputs siempre por código** 
+:::
+
+---
+
+## Principio #1 · Estructura predecible
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"¿cuál archivo era el bueno?"*, *"¿dónde está el dato?"*, *"¿qué hace este script?"*
+:::
+
+::: {style="font-size: 0.72em; margin-top: 0.6em;"}
+```
+📁 estudio_satisfaccion_2025/
+│
+├── data/
+│   ├── raw/                  ← datos del cliente · NUNCA se modifican
+│   └── clean/                ← output de los scripts de limpieza
+│
+├── code/
+│   ├── 01_clean.R            ← pipeline de limpieza
+│   ├── 02_analysis.R         ← análisis y modelos
+│   └── 03_figures.R          ← generación de gráficos
+│
+├── output/
+│   ├── figures/              ← .png, .pdf
+│   └── tables/               ← .csv para reportes
+│
+├── docs/
+│   └── reporte.qmd           ← documento maestro
+│
+└── README.md                 ← documentación del proyecto
+```
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Mismo patrón en cada proyecto → cero tiempo perdido orientándose.
+:::
+
+---
+
+## Principio #2 · Raw vs Clean
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"¿qué le hicieron a estos datos?"*, *"¿por qué la suma cambió?"*
+:::
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+### ✅ El flujo correcto
+
+```r
+# 01_clean.R
+raw <- read_csv("data/raw/clientes.csv")
+
+clean <- raw |>
+  filter(!is.na(nps)) |>
+  mutate(
+    nps_grupo = case_when(
+      nps < 0  ~ "Detractor",
+      nps < 50 ~ "Pasivo",
+      TRUE     ~ "Promotor"
+    )
+  )
+
+write_csv(clean, "data/clean/clientes.csv")
+```
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+### ❌ Lo que NUNCA hacer
+
+```
+1. Abrir el Excel del cliente
+2. Borrar las filas "raras"
+3. Cambiar formatos a mano
+4. Guardar como
+   clientes_USAR_ESTE.xlsx
+```
+:::
+::::
+
+---
+
+## Principio #3 · Outputs por código
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"actualiza el reporte con los nuevos datos"* → 2 horas de copiar-pegar
+:::
+
+<br>
+
+::: {style="font-size: 0.95em;"}
+Cada gráfico, tabla, número que aparece en el reporte final debe poder **regenerarse corriendo un script**.
+:::
+
+```{r}
+#| eval: false
+# Corre el pipeline completo
+source("0_masterfile.R")
+
+# Genera la figura
+ggsave("output/figures/nps_region.png", plot = p, width = 8, height = 5)
+
+# Genera la tabla
+write_csv(resumen_regional, "output/tables/resumen_regional.csv")
+
+# Genera el reporte completo
+quarto::quarto_render("docs/reporte.qmd")
+```
+
+---
+
+
+# Parte III · Herramientas y buenas prácticas {background-color="#1a1a2e"}
+
+---
+
+## Resumen
+
+<br>
+<br>
+
+| **Problema** | **Herramienta / práctica** |
+|:---|:---|
+| Proyecto desordenado | Estructura de carpetas predecible |
+| No sé qué cambió ni cuándo | GitHub |
+| Nadie entiende mi proyecto | README |
+| Datos sucios | Tidy data + script `01_clean.R` |
+| Repetición manual | Iteración (`for` loops) |
+| "Actualizá el reporte" toma 2 horas | Quarto + parámetros |
+| Necesito ayuda con código | IA integrada al pipeline |
+
+
+---
+
+## Buenas prácticas de coding {background-color="#1a1a2e"}
+
+---
+
+### Práctica #1 · El masterfile
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"¿en qué orden corro los scripts?"*, *"¿cuál era el punto de entrada?"*
+:::
+
+<br>
+
+Un **masterfile** (`1_masterfile.R`) es el único archivo que se corre directamente. Llama a todos los demás en orden:
+
+```r
+# 1. Limpiar el entorno
+cat("\014"); rm(list = ls())
+
+# 2. Cargar packages
+library(pacman)
+p_load(tidyverse, knitr, stargazer)
+
+# 3. Definir directorios (solo aquí, una vez)
+folder     <- "/Users/bucca/proyecto_nps/"
+dircode    <- paste0(folder, "code/")
+dirdata    <- paste0(folder, "data/")
+dirresults <- paste0(folder, "results/")
+
+# 4. Correr el pipeline en orden
+source(paste0(dircode, "2_exploration.R"))
+source(paste0(dircode, "3_recoding.R"))
+source(paste0(dircode, "4_analyses.R"))
+```
+
+
+---
+
+### Práctica #2 · Scripts numerados, responsabilidad única
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"¿dónde estaba la limpieza?"*, *"¿qué hace este script?"*
+:::
+
+<br>
+
+```
+code/
+├── 1_masterfile.R      ← llama a todos los demás
+├── 2_exploration.R     ← solo exploración
+├── 3_recoding.R        ← solo recodificación
+├── 4_analyses.R        ← solo análisis y outputs globales
+└── 5_analyses_bysucursal.R ← análisis por subgrupo
+```
+
+
+Cada script hace **una sola cosa**. Los números indican el **orden de ejecución**.
+
+::: {style="font-size: 0.9em;"}
+- Si algo falla en el análisis, sabes que el problema está en `4_analyses.R`
+- Si quieres cambiar una recodificación, vas directo a `3_recoding.R`
+- Nadie tiene que leer 500 líneas para encontrar dónde se filtra algo
+:::
+
+---
+
+### Práctica #3 · Directorios al inicio, rutas relativas
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"en mi computador funciona pero en el tuyo no"*
+:::
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**❌ Ruta absoluta dispersa**
+
+```r
+# en 2_exploration.R
+datos <- read_dta(
+  "/Users/juan/Desktop/
+   proyecto final/
+   datos USAR ESTE v3.dta"
+)
+
+# en 4_analyses.R
+ggsave(
+  "/Users/juan/Desktop/
+   proyecto final/
+   figura1_FINAL.pdf"
+)
+```
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**✅ Directorios definidos una sola vez**
+
+```r
+# en 1_masterfile.R (solo aquí)
+folder     <- "/Users/bucca/nps/"
+dirdata    <- paste0(folder, "data/")
+dirresults <- paste0(folder, "results/")
+
+# en 4_analyses.R
+datos <- read_dta(
+  paste0(dirdata, "clientes.dta")
+)
+
+ggsave(
+  paste0(dirresults, "figura1.pdf")
+)
+```
+:::
+::::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Para adaptar el proyecto a otro computador: **cambiar una sola línea**.
+:::
+
+---
+
+### Práctica #4 · Guardar todos los outputs explícitamente
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"calculé el modelo pero no sé dónde quedó"*, *"la figura solo existe en el panel de R"*
+:::
+
+```r
+# 4_analyses.R
+
+# ── Figuras ──────────────────────────────────────
+mi_figura <- clientes |>
+  ggplot(aes(x = region, y = nps, fill = region)) +
+  geom_boxplot(alpha = 0.7) +
+  theme(legend.position = "none")
+
+ggsave(paste0(dirresults, "figura_nps_region.pdf"),
+       mi_figura, width = 15, height = 10, units = "cm")
+
+# ── Tablas ───────────────────────────────────────
+stargazer(model1, model2,
+          type = "text",
+          out  = paste0(dirresults, "tabla_regresion.txt"))
+
+# ── Modelos ──────────────────────────────────────
+saveRDS(model1, paste0(dirresults, "modelo_nps.rds"))
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Si no está guardado en `results/`, **no existe**.
+:::
+
+---
+
+### Práctica #5 · Flags de debugging
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"el masterfile corrió 10 minutos y no sé si terminó o se colgó"*
+:::
+
+<br>
+
+Al final de cada script, agrega una línea que confirme que llegó hasta ahí:
+
+```r
+# al final de 2_exploration.R
+cat("======== EXPLORACIÓN LISTA ========\n")
+
+# al final de 3_recoding.R
+cat("======== RECODIFICACIÓN LISTA ========\n")
+
+# al final de 4_analyses.R
+cat("======== ANÁLISIS LISTOS ========\n")
+```
+
+
+---
+
+### Práctica #6 · Comentar el código
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"sé qué hace el código, pero no por qué lo hace así"*
+:::
+
+<br>
+
+Un buen comentario no explica **qué** hace el código — eso ya se ve. Explica **por qué** se tomó esa decisión.
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**❌ Comentario inútil**
+
+```r
+# filtra filas con NA
+datos <- datos |> filter(!is.na(nps))
+
+# calcula media
+media <- mean(datos$nps)
+
+# hace gráfico
+ggplot(datos, aes(x = nps)) +
+  geom_histogram()
+```
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**✅ Comentario útil**
+
+```r
+# Se eliminan NAs en nps: son MCAR según
+# exploración (ver 2_exploration.R línea 34).
+# Representan 7% del total — aceptable.
+datos <- datos |> filter(!is.na(nps))
+
+# Media usada como benchmark en el reporte
+# ejecutivo (ver docs/reporte.qmd sección 2)
+media <- mean(datos$nps)
+```
+:::
+::::
+
+---
+
+### Práctica #7 · Comentar el código — estructura del script
+
+<br>
+
+Usa **encabezados de sección** para que el script sea escaneable:
+
+```r
+# ══════════════════════════════════════════
+# 4_analyses.R
+# Análisis NPS por región y sector
+# Autor: Mauricio Bucca · mayo 2025
+# Inputs:  data/clean/clientes.csv
+# Outputs: results/figura_nps.pdf
+#          results/tabla_regresion.txt
+# ══════════════════════════════════════════
+
+
+# ── 1. Cargar datos ───────────────────────
+clientes <- read_csv(paste0(dirdata, "clientes.csv"))
+
+
+# ── 2. Descriptivos ───────────────────────
+# NPS por región — tabla de resumen
+clientes |>
+  group_by(region) |>
+  summarise(media = mean(nps, na.rm = TRUE)) |>
+  arrange(desc(media))
+
+
+# ── 3. Modelo ─────────────────────────────
+# Se usa OLS simple (no mixto) porque no hay
+# estructura jerárquica suficiente (n < 30 por grupo)
+model1 <- lm(nps ~ satisfaccion + facturacion_mm, data = clientes)
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Un script bien comentado es legible como un documento — no como un acertijo.
+:::
+
+---
+
+### Práctica #8 · Iterar en vez de copiar-pegar
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"el análisis hay que repetirlo para 13 sucursales"*
+:::
+
+<br>
+
+En vez de duplicar `4_analyses.R` trece veces, el masterfile itera:
+
+```r
+# 1_masterfile.R
+sucursales <- unique(clientes$sucursal)  # c("Santiago", "Valparaíso", "Concepción", ...)
+
+for (s in sucursales) {
+  cat("=== ANALIZANDO:", s, "===\n")
+
+  # filtra datos de la sucursal s
+  clientes_suc <- clientes |> filter(sucursal == s)
+
+  # corre el mismo script — los outputs se guardan con sufijo "_s"
+  source(paste0(dircode, "5_analyses_bysucursal.R"))
+}
+```
+
+<br>
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Si se agrega una sucursal, el código lo maneja solo.
+:::
+
+---
+
+## El antes y el después
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**❌ Malas prácticas**
+
+```
+analisis.R          ← 800 líneas
+analisis_v2.R
+analisis_FINAL.R
+
+Ruta: /Users/juan/Desktop/
+  proyecto final/datos v3.csv
+
+mean(metro$nps)     ← repetido 5 veces
+mean(valpo$nps)
+mean(biobio$nps)
+...
+
+# figura → solo en el panel, perdida
+```
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**✅ Buenas prácticas**
+
+```
+1_masterfile.R      ← punto de entrada
+2_exploration.R     ← exploración
+3_recoding.R        ← limpieza
+4_analyses.R        ← análisis global
+5_analyses_by*.R    ← análisis por grupo
+
+folder <- "miruta/"   ← una sola vez
+
+for (s in sucursales) {   ← itera
+  source("5_analyses_bysucursal.R")
+}
+
+ggsave(paste0(dirresults, "figura.pdf")) ← guardado
+```
+:::
+::::
+
+---
+
+## Herramientas {background-color="#1a1a2e"}
+
+
+---
+
+### El ecosistema moderno
+
+<br>
+
+| **Herramienta** | **¿Qué problema resuelve?** |
+|:---|:---|
+| **R / Python** | Análisis en código auditable (vs. clic-a-clic en Excel) |
+| **Positron** *(IDE)* | Una sola ventana para todo el workflow |
+| **GitHub** | *"¿qué cambió?"*, *"¿quién lo cambió?"*, *"volvamos a la versión del lunes"* |
+| **Quarto** | Reportes y presentaciones reproducibles que se regeneran con un comando |
+| **IA (Claude Code, etc.)** | Asistencia dentro del pipeline (no fuera) |
+
+---
+
+## R o Python {background-color="#1a1a2e"}
+
+---
+
+## R o Python: herramientas, no religión
+
+
+<br>
+
+::: {style="font-size: 1.05em;"}
+Los **principios** del workflow no cambian con el lenguaje.
+:::
+
+<br>
+
+. . .
+
+| **Tarea** | **R** | **Python** |
+|:---|:---:|:---:|
+| Estadística clásica · ggplot · reportes | ✓✓✓ | ✓ |
+| Manipulación tabular | ✓✓✓ | ✓✓ |
+| Machine Learning · NLP · scraping · automatización | ✓ | ✓✓✓ |
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Para estudios de mercado → **R con tidyverse** suele ser el camino más corto.
+:::
+
+---
+
+## Positron: el IDE moderno {background-color="#1a1a2e"}
+
+---
+
+## Positron: el IDE moderno
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"tengo R abierto en RStudio, Python en VS Code, Quarto en otra ventana, y la terminal aparte"*
+:::
+
+<br>
+
+::: {style="text-align: center;"}
+![](https://i.ytimg.com/vi/Z5-l6GsZIws/maxresdefault.jpg){width=50%}
+:::
+
+
+---
+
+## ¿Qué integra Positron?
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**Lenguajes**
+
+- Consolas **R y Python simultáneas**
+- Cambio fluido entre uno y otro
+- Variable explorer para ambos
+- Data frame viewer integrado
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**Workflow**
+
+- **Quarto** nativo
+- **GitHub** integrado
+- **Terminal** integrada
+- **Claude Code** y otros asistentes IA
+- Extensiones de VS Code
+:::
+::::
+
+<br>
+
+. . .
+
+::: {.callout-note appearance="minimal"}
+Todo el workflow en una sola ventana.
+:::
+
+---
+
+## GitHub {background-color="#1a1a2e"}
+
+---
+
+## GitHub: la máquina del tiempo del proyecto
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"¿qué cambió desde ayer?"*, *"rompiste algo y no sé qué"*, *"tengo 5 versiones del mismo archivo"*
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 1.05em;"}
+**GitHub** es una plataforma para guardar y versionar proyectos en la nube.
+:::
+
+<br>
+
+. . .
+
+::: {.incremental}
+- Guarda **todo el historial** del proyecto, no solo la versión actual
+- Tú decides cuándo tomar una "foto" del proyecto y le pones un nombre descriptivo
+:::
+
+---
+
+## ¿Cómo se usa?
+
+<br>
+
+::: {.incremental}
+1. **Creas un repositorio** en github.com — como crear una carpeta nueva
+2. **Lo conectas a tu computador** desde Positron — un clic
+3. **Trabajas normalmente** — editas scripts, corres código, guardas archivos
+4. **Cuando algo funciona, haces un *commit*** — una foto del proyecto con un mensaje tuyo
+5. **Haces *pull*** — baja los cambios que hiciste en otro computador o que hizo tu colega 
+6. **Haces *push*** — subes esa foto a GitHub
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+En Positron todo esto se hace **con botones**, no con terminal.
+:::
+
+---
+
+## ¿Qué se ve en GitHub?
+
+<br>
+
+::: {style="text-align: center;"}
+![](https://static.codex.so/upload/redactor_images/o_602d344e24f1f5ac13cb05022089101e.jpg
+){width=70%}
+:::
+
+
+
+
+---
+
+## El README {background-color="#1a1a2e"}
+
+---
+
+## El README: tu yo del futuro lo agradecerá
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema que resuelve:** *"abro el proyecto en 1 semana después y no entiendo qué hice!"*
+:::
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**¿Qué responde?**
+
+- ¿Qué hace este proyecto?
+- ¿Cómo lo corro desde cero?
+- ¿Dónde están los datos?
+- ¿Qué dependencias necesito?
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**¿Para quién es?**
+
+- **Tú en 1 semana**
+- El colega que toma el proyecto
+- El cliente que quiere replicar
+- La IA que te ayudará
+:::
+::::
+
+---
+
+## README: estructura de carpetas
+
+::: {style="font-size: 0.9em;"}
+Documenta qué hay en cada directorio para que nadie tenga que adivinar:
+:::
+
+````markdown
+## Estructura del proyecto
+
+diagnostico_nps_2025/
+├── data/
+│   ├── raw/          ← datos originales del cliente (NUNCA editar)
+│   ├── clean/        ← output de 01_clean.R
+│   └── processed/    ← datos derivados para análisis específico
+├── code/
+│   ├── 01_clean.R    ← limpieza y estandarización
+│   ├── 02_analysis.R ← análisis exploratorio y modelos
+│   ├── 03_figures.R  ← generación de gráficos
+│   └── utils/        ← funciones reutilizables
+├── output/
+│   ├── figures/      ← archivos .png, .pdf
+│   └── tables/       ← tablas de resultados .csv
+├── docs/
+│   └── reporte.qmd   ← documento maestro
+├── README.md         ← este archivo
+└── renv.lock         ← versiones exactas de packages
+````
+
+---
+
+## README: cómo replicar (el corazón del documento)
+
+::: {style="font-size: 0.9em;"}
+Los pasos deben funcionar en el computador de **cualquier persona**, no solo en el tuyo:
+:::
+
+````markdown
+## Cómo replicar desde cero
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/dobleaLAB/diagnostico_nps_2025.git
+cd diagnostico_nps_2025
+```
+
+### 2. Instalar dependencias
+```r
+renv::restore()   # instala exactamente los mismos packages y versiones
+```
+
+### 3. Correr el pipeline completo
+```r
+source("code/01_clean.R")     # limpia y estandariza datos
+source("code/02_analysis.R")  # análisis exploratorio y modelos
+source("code/03_figures.R")   # genera gráficos en output/figures/
+quarto render docs/reporte.qmd  # produce el reporte final
+```
+
+### 4. Reportes regionales (opcional)
+```r
+source("code/04_render_regiones.R")  # genera 6 reportes, uno por región
+```
+````
+
+---
+
+## Iteración {background-color="#1a1a2e"}
+
+---
+
+## Iteración
+
+<br>
+
+
+::: {style="font-size: 1.05em;"}
+- Principio DRY — *Don't Repeat Yourself*
+- Hacer N veces lo mismo sin escribir N veces el código
+:::
+
+
+---
+
+## ¿Qué problema resuelve?
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema:** *"tengo que hacer el mismo análisis para 6 regiones / 12 meses / 30 productos"*
+:::
+
+<br>
+
+. . .
+
+::: {.callout-important appearance="minimal"}
+## Principio **DRY** — *Don't Repeat Yourself*
+
+Si copias y pegas código más de **dos veces**, hay una mejor manera.
+:::
+
+<br>
+
+. . .
+
+Menos código → menos errores → más confianza.
+
+---
+
+## El problema: repetición manual
+
+<br>
+
+```{r}
+media_metro  <- mean(clientes$nps[clientes$region == "Metropolitana"], na.rm = TRUE)
+media_valpo  <- mean(clientes$nps[clientes$region == "Valparaíso"],    na.rm = TRUE)
+media_biobio <- mean(clientes$nps[clientes$region == "Biobío"],        na.rm = TRUE)
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em;"}
+¿Qué pasa cuando hay **6 regiones**? ¿O **16**? ¿O cuando se agrega otra variable?
+:::
+
+---
+
+## La solución: el `for` loop
+
+<br>
+
+```{r}
+for (r in unique(clientes$region)) {
+  media <- mean(clientes$nps[clientes$region == r], na.rm = TRUE)
+  cat(r, "→ NPS medio:", round(media, 1), "\n")
+}
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+Una sola estructura. Funciona con 6, 16 o 60 regiones.
+:::
+
+---
+
+# Quarto · Reportes y presentaciones con R/Python integrado {background-color="#1a1a2e"}
+
+---
+
+## ¿Qué problema resuelve Quarto?
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problemas que resuelve:**
+
+- *"Hay que actualizar el reporte con los datos de mayo"* → 2 horas de copiar y pegar
+- *"El cliente quiere un reporte por cada una de sus 6 regiones"* → ¿hago 6 Word distintos?
+- *"Necesito que el gráfico y la tabla cuadren con el texto"* → siempre se desincronizan
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 1.05em;"}
+**Quarto une texto, código y resultados en un solo archivo.**  
+Cambian los datos → todo el reporte se regenera solo.
+:::
+
+---
+
+## ¿Qué es Quarto?
+
+<br>
+
+Un **formato de documento integrado** que combina:
+
+<br>
+
+:::: {.columns}
+::: {.column width="32%"}
+**Texto**
+
+Markdown,  
+ecuaciones,  
+imágenes,  
+tablas
+:::
+
+::: {.column width="32%"}
+**Código**
+
+Chunks de R,  
+Python, Julia,  
+Bash —  
+o los cuatro
+:::
+
+::: {.column width="32%"}
+**Output**
+
+HTML, PDF,  
+Word, PPTX,  
+slides,  
+dashboards
+:::
+::::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+Un mismo archivo `.qmd` puede convertirse en HTML, Word, PDF, o esta misma presentación.
+:::
+
+---
+
+## ¿Qué se puede producir con Quarto?
+
+<br>
+
+| **Output** | **Para qué sirve** |
+|:---|:---|
+| **HTML** | Reporte interactivo para enviar por mail / publicar en web |
+| **PDF** | Documento final formal · papers · entregables firmados |
+| **Word (.docx)** | Cuando el cliente edita en Word y no se mueve de ahí |
+| **Reveal.js slides** | Presentaciones (como **esta misma**) |
+| **PowerPoint (.pptx)** | Cuando la organización solo acepta PPT |
+| **Dashboard** | Tableros con KPIs interactivos |
+| **Sitio web / libro** | Documentación de proyectos completos |
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+**El mismo `.qmd`, distinto output.** Sin reescribir contenido.
+:::
+
+---
+
+## Anatomía de un documento Quarto
+
+````markdown
+---
+title: "Estudio NPS · Metropolitana"
+author: "DobleA LAB"
+format: html              ← acá decides el output
+---
+
+## Resumen
+
+La muestra contiene 150 empresas en 6 regiones.
+
+```{{r}}
+library(tidyverse)
+clientes <- read_csv("data/clean/clientes.csv")
+mean(clientes$nps, na.rm = TRUE)
+```
+
+El gráfico siguiente muestra la distribución por región...
+````
+
+<br>
+
+. . .
+
+Tres bloques: **YAML** (configuración), **texto markdown**, **chunks de código**.
+
+---
+
+## El YAML
+
+<br>
+
+````markdown
+---
+title: "Estudio NPS 2025"
+author: "Mauricio Bucca"
+date: today
+format:
+  html:
+    toc: true              # tabla de contenidos automática
+    code-fold: true        # código plegable
+  pdf:
+    documentclass: article
+  docx: default
+execute:
+  echo: false              # no mostrar el código en el output
+  warning: false           # silenciar advertencias
+---
+````
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+Cambias una línea y el mismo archivo se convierte en HTML, PDF o Word.
+:::
+
+---
+
+## Chunks de código: el motor
+
+<br>
+
+````markdown
+```{{r}}
+#| echo: false       ← no mostrar el código
+#| fig-width: 8      ← controlar tamaño del gráfico
+#| fig-cap: "NPS por región"
+
+clientes |>
+  ggplot(aes(x = region, y = nps)) +
+  geom_boxplot()
+```
+````
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+**Opciones de chunk** más usadas:
+:::
+
+::: {style="font-size: 0.85em;"}
+- `echo: false` — ejecutar pero no mostrar el código
+- `eval: false` — mostrar el código pero no ejecutarlo
+- `warning: false` / `message: false` — silenciar advertencias
+- `fig-width` / `fig-height` — tamaño del gráfico
+- `cache: true` — guardar resultado (útil para chunks lentos)
+:::
+
+---
+
+## Valores inline: el número vive en el código
+
+<br>
+
+```markdown
+La muestra contiene `{{r}} nrow(clientes)` empresas 
+de `{{r}} n_distinct(clientes$region)` regiones.
+
+El NPS promedio es **`{{r}} round(mean(clientes$nps, na.rm=TRUE), 1)`**.
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em;"}
+**Cambian los datos → los números del texto se actualizan solos.**
+
+Nunca más copiar resultados a mano al Word.
+:::
+
+
+---
+
+## ¿Cómo se ve en la práctica?
+
+<br>
+
+
+::: {style="text-align: center;"}
+![](https://positron.posit.co/images/quarto-hello-python.png){width=70%}
+:::
+
+---
+
+## La feature que cambia todo: parámetros
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema:** *"6 regiones × un reporte por cada una = 6 reportes idénticos en estructura, distintos en datos"*
+:::
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**❌ A mano**
+
+1. Copiar `.qmd` 6 veces
+2. Cambiar el filtro en cada uno
+3. Renderizar uno por uno
+4. **Resultado:** 6 archivos desincronizados
+5. **Garantía:** habrá un error
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**✅ Con parámetros**
+
+1. Un reporte maestro
+2. Un loop
+3. Un clic
+4. **Resultado:** 6 reportes idénticos en estructura
+5. **Garantía:** cero errores manuales
+:::
+::::
+
+---
+
+## Quarto con parámetros: cómo se declaran
+
+<br>
+
+En el YAML del documento:
+
+````markdown
+---
+title: "Estudio Regional"
+params:
+  region: "Metropolitana"     ← parámetro configurable
+  año: 2025
+  umbral_promotor: 50
+---
+````
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+Los parámetros se vuelven **variables** dentro del documento, accesibles como `params$region`, `params$año`, etc.
+:::
+
+---
+
+## Quarto con parámetros: cómo se usan
+
+<br>
+
+````markdown
+## Región: `{{r}} params$region`
+
+```{{r}}
+datos <- clientes |> 
+  filter(region == params$region, year == params$año)
+
+nps_promedio <- mean(datos$nps, na.rm = TRUE)
+```
+
+El NPS promedio en **`{{r}} params$region`** es **`{{r}} round(nps_promedio, 1)`**.
+
+El umbral para clasificar Promotores es `{{r}} params$umbral_promotor`.
+````
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+**El mismo documento** produce un reporte distinto para cada combinación de parámetros.
+:::
+
+---
+
+## Generar todos los reportes con un loop
+
+<br>
+
+```{r}
+#| eval: false
+library(quarto)
+
+regiones <- unique(clientes$region)
+
+for (r in regiones) {
+  quarto_render(
+    input          = "docs/reporte_regional.qmd",
+    execute_params = list(region = r, año = 2025),
+    output_file    = paste0("reporte_", tolower(r), ".html")
+  )
+}
+```
+
+. . .
+
+**Output:**
+
+```
+✓ reporte_metropolitana.html
+✓ reporte_valparaíso.html
+✓ reporte_biobío.html
+✓ reporte_antofagasta.html
+✓ reporte_araucanía.html
+✓ reporte_los_lagos.html
+```
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+**Cuando lleguen los datos de junio, corres el mismo loop.**
+:::
+
+
+---
+
+# IA en el workflow {background-color="#1a1a2e"}
+
+::: {style="text-align: center; font-size: 0.9em; margin-top: 1em; color: #aaa;"}
+Asistencia dentro del pipeline, no fuera de él
+:::
+
+
+---
+
+## ¿Qué problema resuelve?
+
+<br>
+
+::: {.callout-note appearance="minimal" icon=false}
+**🩺 Problema:** *"me quedé pegado con un bug y voy a perder 2 horas googleando"*, *"necesito hacer que el código corra pero no tengo tiempo"*
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 1.05em;"}
+Asistentes como **Claude Code**, **GitHub Copilot** o **Cursor** se integran al workflow.
+:::
+
+<br>
+
+. . .
+
+**No reemplazan el pipeline — operan dentro de él.**
+
+::: {.incremental}
+- Leen tu código y entienden el contexto
+- Sugieren correcciones, refactorizaciones, tests
+- Ejecutan tareas largas (debuggear, generar 6 reportes, etc.)
+- Documentan funciones, escriben READMEs
+:::
+
+---
+
+## Dos formas de integrar IA
+
+<br>
+
+:::: {.columns}
+::: {.column width="48%"}
+**Asistente en el IDE**
+
+- Chat dentro de Positron / VS Code
+- Accede al contexto del archivo abierto
+- Ideal para **debugging interactivo**
+- Sugerencias mientras escribís
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+**Claude Code (terminal)**
+
+- Corre desde la terminal del IDE
+- Lee y escribe archivos
+- Puede ejecutar código
+- Ideal para **tareas más largas**
+:::
+::::
+
+---
+
+## El principio que no cambia
+
+<br>
+
+::: {.callout-important appearance="minimal"}
+La IA **opera dentro** del pipeline. No lo define. No lo reemplaza.
+
+Un buen pipeline hace que la IA:
+
+- **Funcione mejor** — el contexto está claro (estructura, README)
+- **Sea auditable** — se ve exactamente qué hizo (GitHub)
+- **No genere caos** — los cambios se rastrean
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em; text-align: center;"}
+La IA es **una herramienta más** en tu toolkit, no el toolkit completo.
+:::
+
+---
+
+# Todo junto · un ejemplo {background-color="#1a1a2e"}
+
+::: {style="text-align: center; font-size: 0.9em; margin-top: 1em; color: #aaa;"}
+Recapitulación con un caso concreto
+:::
+
+---
+
+## La situación
+
+<br>
+
+::: {.callout-warning appearance="minimal"}
+## Lunes a las 9am
+
+El cliente envía la encuesta NPS de mayo de **150 empresas en 6 regiones**.
+
+Quiere:
+
+- Un **reporte general** con el NPS global
+- Un **reporte por región** (6 documentos)
+- Todo en **HTML** para subir a su intranet
+- Para el **viernes**
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em; text-align: center;"}
+**Veamos cómo se ve este trabajo con un buen workflow.**
+:::
+
+---
+
+## Paso 0 · La estructura ya existe
+
+<br>
+
+::: {style="font-size: 0.78em;"}
+```
+📁 estudio_nps_2025/
+├── data/
+│   ├── raw/                  ← acá pega la encuesta de mayo
+│   └── clean/
+├── code/
+│   ├── 01_clean.R
+│   ├── 02_analysis.R
+│   └── 03_render_reportes.R
+├── docs/
+│   ├── reporte_general.qmd
+│   └── reporte_regional.qmd   ← parametrizado por región
+├── output/
+└── README.md
+```
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em; text-align: center;"}
+**Ya está armado de proyectos anteriores.** No empieza desde cero.
+:::
+
+---
+
+## Paso 1 · Datos crudos al lugar correcto
+
+<br>
+
+::: {style="font-size: 0.95em;"}
+1. Copio el archivo del cliente a `data/raw/`
+2. Desde Positron, hago un **commit** con el mensaje:  
+   *"data: agregar encuesta mayo 2025"*
+3. Hago **push** para subirlo a GitHub
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em;"}
+🛠️ **Herramientas usadas:** estructura de carpetas (raw/), GitHub (respaldo + trazabilidad).
+:::
+
+<br>
+
+. . .
+
+::: {.callout-note appearance="minimal"}
+El archivo queda intocado en `data/raw/`. Nunca se edita a mano.
+:::
+
+---
+
+## Paso 2 · Limpieza vía script
+
+<br>
+
+```r
+# code/01_clean.R
+library(tidyverse)
+
+raw <- read_csv("data/raw/encuesta_mayo_2025.csv")
+
+clean <- raw |>
+  filter(!is.na(nps)) |>
+  mutate(
+    nps_grupo = case_when(
+      nps < 0  ~ "Detractor",
+      nps < 50 ~ "Pasivo",
+      TRUE     ~ "Promotor"
+    )
+  )
+
+write_csv(clean, "data/clean/clientes.csv")
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em;"}
+🛠️ **Herramientas:** tidyverse, tidy data, principio raw → clean.
+:::
+
+---
+
+## Paso 3 · Reporte regional parametrizado
+
+<br>
+
+```` {style="font-size: 0.8em;"}
+---
+title: "Estudio NPS · `{{r}} params$region`"
+format: html
+params:
+  region: "Metropolitana"
+---
+
+```{{r}}
+library(tidyverse)
+clientes <- read_csv("data/clean/clientes.csv")
+datos <- clientes |> filter(region == params$region)
+```
+
+## Resumen
+
+En **`{{r}} params$region`** medimos `{{r}} nrow(datos)` empresas.
+
+El NPS promedio es **`{{r}} round(mean(datos$nps, na.rm=TRUE), 1)`**.
+
+```{{r}}
+#| echo: false
+ggplot(datos, aes(x = nps_grupo)) + geom_bar()
+```
+````
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+🛠️ **Herramientas:** Quarto, parámetros, valores inline, chunks.
+:::
+
+---
+
+## Paso 4 · Generar los 6 reportes con un loop
+
+<br>
+
+```r
+# code/03_render_reportes.R
+library(quarto)
+
+clientes <- read_csv("data/clean/clientes.csv")
+
+for (r in unique(clientes$region)) {
+  quarto_render(
+    input          = "docs/reporte_regional.qmd",
+    execute_params = list(region = r),
+    output_file    = paste0("reporte_", tolower(r), ".html")
+  )
+}
+```
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+🛠️ **Herramientas:** iteración (`for`), Quarto con parámetros.
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.9em;"}
+**~40 segundos** después: 6 reportes listos. **Cero copiar-pegar.**
+:::
+
+---
+
+## Paso 5 · Commit y entrega
+
+<br>
+
+::: {style="font-size: 0.95em;"}
+1. Desde Positron, hago **commit** con el mensaje:  
+   *"feat: reportes NPS mayo 2025"*
+2. Hago **push** para subir todo a GitHub
+3. Comparto el link de los reportes con el cliente
+:::
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em;"}
+🛠️ **Herramientas:** GitHub (snapshot del trabajo + respaldo en la nube).
+:::
+
+<br>
+
+. . .
+
+::: {.callout-tip appearance="minimal"}
+Si el cliente pide cambios el jueves, **todo el pipeline corre de nuevo en ~1 minuto.**
+:::
+
+---
+
+## ¿Qué pasó en el camino?
+
+<br>
+
+| **Paso** | **Tiempo manual** | **Con workflow** |
+|:---|:---:|:---:|
+| Limpiar datos | ~1 hora | 5 seg (correr script) |
+| Generar 6 reportes | ~3 horas | 40 seg (loop) |
+| Detectar un error y arreglar | ~2 horas | 1 min (cambiar línea + re-render) |
+| Documentar qué se hizo | ~30 min | ya está en el código |
+| **Total** | **~7 horas** | **~5 min** |
+
+<br>
+
+. . .
+
+::: {style="font-size: 0.95em; text-align: center;"}
+**Y cuando llegue la encuesta de junio:** mismo flujo, mismo tiempo.
+:::
+
+. . .
+
+::: {style="font-size: 1em; text-align: center; margin-top: 0.8em;"}
+**El cliente recibe lo mismo. Tú hiciste 80 veces menos trabajo.**
+:::
+
+---
+
+# Cierre {background-color="#1a1a2e"}
+
+---
+
+## Los 5 hábitos que importan
+
+<br>
+
+::: {.incremental}
+1. **Estructura ANTES de código** — el mismo patrón en cada proyecto
+2. **Datos crudos intocables** — si cambia algo, lo hace el código
+3. **Outputs siempre generados por código** — nunca a mano
+4. **Commits frecuentes** con mensajes descriptivos
+5. **Documentación** como parte del flujo, no al final
+:::
+
+---
+
+## Checklist antes de enviar un análisis
+
+<br>
+
+- [ ] ¿Puedo reproducir TODO con un solo comando?
+- [ ] ¿Un colega puede clonarlo y correrlo?
+- [ ] ¿Está documentado de dónde vienen los datos?
+- [ ] ¿Está claro qué decisiones tomé (filtros, transformaciones)?
+- [ ] ¿Los gráficos y tablas se generan con código?
+- [ ] ¿Hay un README?
+- [ ] ¿El proyecto está versionado en GitHub?
+- [ ] ¿Si cambian los datos, puedo señalar exactamente dónde cambió cada número?
+
+
+---
+
+# Gracias {background-color="#1a1a2e"}
+
+<br>
+
+**Mauricio Bucca**
+
+[mebucca.github.io](https://mebucca.github.io) · [github.com/mebucca](https://github.com/mebucca)
+
+[mebucca@gmail.com](mailto:mebucca@gmail.com)
+
+<br>
+
+**DobleAA LAB**
+
+*19 de mayo, 2025*
