@@ -55,7 +55,7 @@ encuesta_sub <- encuesta_sub %>%
   mutate(
     segmento = factor(
       segmento,
-      levels  = c("Pyme", "Mediana", "Grande"),
+      levels  = c("Pyme", "Mediana", "Plus Size"),
       ordered = TRUE
     )
   )

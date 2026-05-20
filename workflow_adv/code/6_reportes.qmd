@@ -1,6 +1,6 @@
 ---
 params:
-  titulo_region: "Reporte NPS"
+  titulo_region: "Este es mi primer Reporte automatizado NPS"
 title: "`r params$titulo_region`"
 author: "DobleA Consultoría"
 date: today
@@ -42,7 +42,7 @@ empresas_reg    <- empresas_agg  %>% filter(region == r)
 
 ## Introducción
 
-Este reporte presenta los resultados de la encuesta de satisfacción NPS correspondiente a la región **`r r`**.
+Este reporte presenta los resultados de la encuesta de satisfacción NPS correspondiente a la región **`r r`**. Deberia funcionar sin problemas.
 
 La muestra regional incluye **`r n_distinct(encuesta_region$empresa_id)` empresas** y un total de **`r nrow(encuesta_region)` respuestas** individuales. El período de medición es `r format(Sys.Date(), '%B %Y')`.
 

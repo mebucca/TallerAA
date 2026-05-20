@@ -91,9 +91,9 @@ fig_nps_region <- nps_por_region %>%
   ) +
   # Escala divergente: rojo negativo, amarillo neutro, verde positivo
   scale_fill_gradient2(
-    low      = "#d73027",
-    mid      = "#fee08b",
-    high     = "#1a9850",
+    low      = "#8e6765",
+    mid      = "#201907",
+    high     = "#10c15d",
     midpoint = 0
   ) +
   labs(
@@ -406,7 +406,7 @@ fig_biplot <- ggplot() +
             aes(x = PC1 * escala * 1.15,
                 y = PC2 * escala * 1.15,
                 label = variable),
-            color = "#d73027", size = 3.5, fontface = "bold") +
+            color = "#734fbb", size = 3.5, fontface = "bold") +
   # Ejes cruzados en el origen
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray70") +
   geom_vline(xintercept = 0, linetype = "dashed", color = "gray70") +
